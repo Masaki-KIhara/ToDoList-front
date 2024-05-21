@@ -21,7 +21,7 @@ type Props = {
 export const TodoTable = ({ title, tableBodyList }: Props) => {
   const tableHeaderList = ["タイトル", "完了"];
   return (
-    <>
+    <div className="mt-12">
       <h1 className={"text-center mb-[10px] font-bold"}>{title}</h1>
       <TableContainer
         className={"block mx-auto"}
@@ -46,6 +46,6 @@ export const TodoTable = ({ title, tableBodyList }: Props) => {
           </TableBody>
         </Table>
       </TableContainer>
-    </>
+    </div>
   );
 };
