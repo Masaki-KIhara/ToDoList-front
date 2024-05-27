@@ -13,6 +13,10 @@ type TodoDataType = {
   isCompleted: string;
 };
 
+export type PostTodoDataType = {
+  title: string;
+};
+
 export const useGetTodos = () => {
   const [unCompleteTodoListDate, setUnCompleteTodoListDate] = useState<
     TodoDataType[]
@@ -20,32 +24,31 @@ export const useGetTodos = () => {
   const [completeTodoListDate, setCompleteTodoListDate] = useState<
     TodoDataType[]
   >([]);
+
   const getData = async () => {
     const response = await fetch("http://127.0.0.1:8000/tasks");
     const formatData: ResponseDataType[] = await response.json();
-    formatData.forEach((item) => {
-      if (!item.is_complete) {
-        setUnCompleteTodoListDate([
-          {
-            id: item.id,
-            title: item.title,
-            isCompleted: "未完了",
-          },
-        ]);
-      } else {
-        setCompleteTodoListDate([
-          {
-            id: item.id,
-            title: item.title,
-            isCompleted: "完了",
-          },
-        ]);
-      }
-    });
+    const unCompleteTodos = formatData.filter((item) => !item.is_complete);
+    const completeTodos = formatData.filter((item) => item.is_complete);
+    setUnCompleteTodoListDate(
+      unCompleteTodos.map((item) => ({
+        id: item.id,
+        title: item.title,
+        isCompleted: "未完了",
+      }))
+    );
+    setCompleteTodoListDate(
+      completeTodos.map((item) => ({
+        id: item.id,
+        title: item.title,
+        isCompleted: "完了",
+      }))
+    );
   };
+
   useEffect(() => {
     getData();
   }, []);
 
-  return { unCompleteTodoListDate, completeTodoListDate };
+  return { unCompleteTodoListDate, completeTodoListDate, getData };
 };
