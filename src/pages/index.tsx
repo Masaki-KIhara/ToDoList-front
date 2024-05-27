@@ -7,25 +7,24 @@ import {
   TextField,
 } from "../../node_modules/@mui/material/index";
 import { useGetTodos } from "./api/useGetTodo";
-import { useForm, SubmitHandler } from "react-hook-form";
+import { useForm, SubmitHandler, Controller } from "react-hook-form";
+import { usePostTodo } from "./api/usePostTodo";
 
-type FormValue = {
+type FormValues = {
   title: string;
 };
 
 export default function Home() {
-  const { unCompleteTodoListDate, completeTodoListDate } = useGetTodos();
   const [isOpenModal, setIsOpenModal] = useState<boolean>(false);
-  const { handleSubmit } = useForm();
-  const openModal = () => {
-    setIsOpenModal(true);
+  const { unCompleteTodoListDate, completeTodoListDate, getData } =
+    useGetTodos();
+  const { postData } = usePostTodo(getData, setIsOpenModal);
+  const { handleSubmit, control, reset } = useForm<FormValues>();
+
+  const onSubmit: SubmitHandler<FormValues> = (data) => {
+    postData(data);
   };
-  const closeModal = () => {
-    setIsOpenModal(false);
-  };
-  const onSubmit: SubmitHandler<FormValue> = (data) => {
-    console.log(data);
-  };
+
   const style = {
     position: "absolute" as "absolute",
     top: "50%",
@@ -39,13 +38,16 @@ export default function Home() {
 
   return (
     <>
-      <div className="grid justify-center">
+      <div className="grid mt-10 justify-center">
         <h1 className="text-center font-bold">未完了タスク一覧</h1>
         <div className="text-right">
           <Button
             variant="contained"
             className="w-10 text-right h-[30px] mb-[10px]"
-            onClick={openModal}
+            onClick={() => {
+              setIsOpenModal(true);
+              reset({ title: "" });
+            }}
           >
             登録
           </Button>
@@ -54,25 +56,49 @@ export default function Home() {
       </div>
       <div className="grid justify-center mt-20">
         <h1 className="text-center font-bold">完了タスク一覧</h1>
-        <TodoTable tableBodyList={completeTodoListDate} />{" "}
+        <TodoTable tableBodyList={completeTodoListDate} />
       </div>
       <Modal
         open={isOpenModal}
-        onClose={closeModal}
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
         <Box sx={style}>
           <h2 className={"font-bold mb-10"}>タスク名登録</h2>
-          <form onSubmit={handleSubmit(onSubmit)} className="flex gap-10">
-            <TextField label={"タスク名"} className={"w-[50%]"} />
-            <Button
-              type={"submit"}
-              variant="contained"
-              className="w-10 text-right"
-            >
-              登録
-            </Button>
+          <form onSubmit={handleSubmit(onSubmit)}>
+            <Controller
+              control={control}
+              name={"title"}
+              render={({ field }) => (
+                <TextField
+                  {...field}
+                  label={"タスク名"}
+                  className={"w-[90%]"}
+                  name={field.name}
+                  value={field.value}
+                />
+              )}
+            />
+            <div className="flex justify-center gap-10 mt-10">
+              <Button
+                type={"button"}
+                onClick={() => {
+                  setIsOpenModal(false);
+                  reset({ title: "" });
+                }}
+                variant="text"
+                className="w-[20%] text-right"
+              >
+                キャンセル
+              </Button>
+              <Button
+                type={"submit"}
+                variant="contained"
+                className="w-[20%] text-right"
+              >
+                登録
+              </Button>
+            </div>
           </form>
         </Box>
       </Modal>
